@@ -26,12 +26,12 @@ Epoch 30/30 batch=4100, d_loss=0.9101, g_loss=1.2164
 ![Generated Image 4](./synthetic_sevens_second_experiment/generated_4.png)
 ![Generated Image 5](./synthetic_sevens_second_experiment/generated_5.png)
 
-Architecture block diagrams:
+### Architecture block diagrams
 
-Generator:
+#### Generator
 ![Generator Architecture](./synthetic_sevens_second_experiment/dcgan_generator_blockdiagram.png)
 
-Discriminator:
+#### Discriminator
 ![Discriminator Architecture](./synthetic_sevens_second_experiment/dcgan_discriminator_blockdiagram.png)
 
 ## License
