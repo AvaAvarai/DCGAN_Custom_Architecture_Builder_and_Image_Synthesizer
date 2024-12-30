@@ -70,17 +70,48 @@ Resultant loss values: batch=4100, d_loss=0.9101, g_loss=1.2164
 
 ### Architecture Block Diagrams for the Second Experiment
 
-#### Generator Block Diagram
+#### Second Experiment Generator Block Diagram
 
 ![Generator Architecture](./synthetic_sevens_second_experiment/dcgan_generator_blockdiagram.png)
 
-#### Discriminator Block Diagram
+#### Second Experiment Discriminator Block Diagram
 
 ![Discriminator Architecture](./synthetic_sevens_second_experiment/dcgan_discriminator_blockdiagram.png)
 
+## Third Experiment
+
+We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with loss values of batch=1300, d_loss=1.3237, g_loss=0.7212, and generated 10 images.  
+
+Using the following architecture parameters:
+Generator: 1024,4,1; 512,4,2; 256,4,2; 128,4,2; 3,4,2
+Discriminator: 64,4,2; 128,4,2; 256,4,2; 512,4,2
+
+This is the first experiment with dynamic starting spatial dimensions allowing for this architecture to be used for any image size.
+
+![Generated Image 0](./synthetic_sevens_third_experiment/generated_0.png)
+![Generated Image 1](./synthetic_sevens_third_experiment/generated_1.png)
+![Generated Image 2](./synthetic_sevens_third_experiment/generated_2.png)
+![Generated Image 3](./synthetic_sevens_third_experiment/generated_3.png)
+![Generated Image 4](./synthetic_sevens_third_experiment/generated_4.png)
+![Generated Image 5](./synthetic_sevens_third_experiment/generated_5.png)
+![Generated Image 6](./synthetic_sevens_third_experiment/generated_6.png)
+![Generated Image 7](./synthetic_sevens_third_experiment/generated_7.png)
+![Generated Image 8](./synthetic_sevens_third_experiment/generated_8.png)
+![Generated Image 9](./synthetic_sevens_third_experiment/generated_9.png)
+
+### Architecture Block Diagrams for the Third Experiment
+
+#### Third Experiment Generator Block Diagram
+
+![Generator Architecture](./synthetic_sevens_third_experiment/dcgan_generator_blockdiagram.png)
+
+#### Third Experiment Discriminator Block Diagram
+
+![Discriminator Architecture](./synthetic_sevens_third_experiment/dcgan_discriminator_blockdiagram.png)
+
 ## Todo
 
-- [ ] Add image preprocessing to not choose to grayscale the images.
+- [ ] Add image preprocessing to choose to grayscale the images or not.
 - [ ] Add graph visualization of the generator and discriminator loss values over training epochs.
 
 ## Referenced Citations
