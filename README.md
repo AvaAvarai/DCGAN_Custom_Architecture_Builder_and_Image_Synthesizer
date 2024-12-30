@@ -5,6 +5,8 @@ It allows the user to specify the architecture of the generator and discriminato
 
 The user interface is built in Python using Tkinter, and the models are built using TensorFlow and Keras the diagrams are visualized with visualkeras and tensorflow keras utils.
 
+![ui screenshot](./image.png)
+
 ## First Experiment
 
 We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with loss values of batch=1300, d_loss=1.2257, g_loss=0.9160, and generated 5 images.
