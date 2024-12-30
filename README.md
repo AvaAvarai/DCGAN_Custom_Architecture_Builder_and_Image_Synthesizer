@@ -111,7 +111,6 @@ This is the first experiment with dynamic starting spatial dimensions allowing f
 
 ## Todo
 
-- [ ] Add image preprocessing to choose to grayscale the images or not.
 - [ ] Add graph visualization of the generator and discriminator loss values over training epochs.
 
 ## Referenced Citations

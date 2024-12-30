@@ -41,41 +41,36 @@ def parse_layer_specs(spec_str):
     return layer_specs
 
 
-def build_param_generator(latent_dim, layer_specs, start_spatial=4):
+def build_param_generator(latent_dim, layer_specs, start_spatial=4, grayscale=False):
     """
-    Build a DCGAN-style generator using a list of (filters, kernel_size, stride),
-    starting with Input(...) instead of a direct input_shape=..., 
-    but allowing a dynamic 'start_spatial' (default=4) for the projection/reshape.
-
-    Example usage:
-        gen_specs = [(1024, 4, 1), (512, 4, 2), (256, 4, 2), (128, 4, 2), (3, 4, 2)]
-        generator = build_param_generator(latent_dim=100, layer_specs=gen_specs, start_spatial=4)
+    Build a DCGAN-style generator, dynamically adjusting the final layer for grayscale or RGB output.
     """
     if not layer_specs:
         raise ValueError("Generator layer specs cannot be empty.")
 
+    output_channels = 1 if grayscale else 3  # Adjust output channels for grayscale or RGB
     model = keras.Sequential(name="generator")
 
-    # 1) Input layer for latent vector (z)
+    # Input layer for latent vector
     model.add(keras.Input(shape=(latent_dim,)))  
     
-    # 2) Projection layer: Dense + reshape to start_spatial x start_spatial
-    out_channels_0, kernel_0, stride_0 = layer_specs[0]
+    # Projection layer
+    out_channels_0, _, _ = layer_specs[0]
     model.add(layers.Dense(start_spatial * start_spatial * out_channels_0, use_bias=False))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU(negative_slope=0.2))
     model.add(layers.Reshape((start_spatial, start_spatial, out_channels_0)))
 
-    # 3) Intermediate upsampling layers
-    for (out_ch, k, s) in layer_specs[1:-1]:
+    # Intermediate upsampling layers
+    for out_ch, k, s in layer_specs[1:-1]:
         model.add(layers.Conv2DTranspose(out_ch, k, strides=s, padding='same', use_bias=False))
         model.add(layers.BatchNormalization())
         model.add(layers.LeakyReLU(negative_slope=0.2))
 
-    # 4) Final layer
+    # Final layer
     out_channels_last, kernel_last, stride_last = layer_specs[-1]
     model.add(layers.Conv2DTranspose(
-        filters=out_channels_last,
+        filters=output_channels,
         kernel_size=kernel_last,
         strides=stride_last,
         padding='same',
@@ -86,31 +81,32 @@ def build_param_generator(latent_dim, layer_specs, start_spatial=4):
     return model
 
 
-def build_param_discriminator(layer_specs):
+def build_param_discriminator(layer_specs, grayscale=False):
     """
-    Build a DCGAN-style discriminator from a list of (filters, kernel_size, stride),
-    using an explicit Input(...) layer for shape (64,64,3).
+    Build a DCGAN-style discriminator, dynamically adjusting the input layer for grayscale or RGB input.
     """
     if not layer_specs:
         raise ValueError("Discriminator layer specs cannot be empty.")
 
+    input_channels = 1 if grayscale else 3  # Adjust input channels for grayscale or RGB
     model = keras.Sequential(name="discriminator")
-    # 1) Input layer for 64x64 RGB images
-    model.add(keras.Input(shape=(64, 64, 3)))  
+
+    # Input layer
+    model.add(keras.Input(shape=(64, 64, input_channels)))  
     
-    # 2) First conv spec
+    # First conv layer
     out_channels_0, kernel_0, stride_0 = layer_specs[0]
     model.add(layers.Conv2D(out_channels_0, kernel_0, strides=stride_0, padding='same'))
     model.add(layers.LeakyReLU(negative_slope=0.2))
     model.add(layers.Dropout(0.3))
 
-    # 3) Intermediate downsampling
-    for (out_ch, k, s) in layer_specs[1:]:
+    # Intermediate downsampling layers
+    for out_ch, k, s in layer_specs[1:]:
         model.add(layers.Conv2D(out_ch, k, strides=s, padding='same'))
         model.add(layers.LeakyReLU(negative_slope=0.2))
         model.add(layers.Dropout(0.3))
 
-    # 4) Output
+    # Output layer
     model.add(layers.Flatten())
     model.add(layers.Dense(1, activation='sigmoid'))
 
@@ -118,15 +114,17 @@ def build_param_discriminator(layer_specs):
 
 
 # ------------------------ Data Loading / Training / Generation ------------------------ #
-
-def load_images_from_folder(folder, image_size=(64, 64), batch_size=32):
-    """Load all images from a given folder into a tf.data.Dataset."""
+def load_images_from_folder(folder, image_size=(64, 64), batch_size=32, grayscale=False):
+    """
+    Load images from a folder, processing them in grayscale or RGB mode based on the `grayscale` flag.
+    """
     all_images = []
     file_extensions = ('*.png', '*.jpg', '*.jpeg')
+    color_mode = "grayscale" if grayscale else "rgb"  # Set color mode
 
     for ext in file_extensions:
         for file in glob.glob(os.path.join(folder, ext)):
-            img = keras.preprocessing.image.load_img(file, target_size=image_size)
+            img = keras.preprocessing.image.load_img(file, target_size=image_size, color_mode=color_mode)
             img = keras.preprocessing.image.img_to_array(img)
             all_images.append(img)
 
@@ -134,7 +132,7 @@ def load_images_from_folder(folder, image_size=(64, 64), batch_size=32):
         raise ValueError("No images found in the specified folder.")
 
     all_images = np.array(all_images, dtype=np.float32)
-    all_images = (all_images - 127.5) / 127.5
+    all_images = (all_images - 127.5) / 127.5  # Normalize to [-1, 1]
 
     dataset = tf.data.Dataset.from_tensor_slices(all_images)
     dataset = dataset.shuffle(buffer_size=1000).batch(batch_size)
@@ -321,17 +319,22 @@ def main():
     disc_entry.insert(0, "64,4,2; 128,4,2; 256,4,2; 512,4,2")
     disc_entry.grid(row=6, column=1, padx=5, pady=5, columnspan=2)
 
-    # Buttons: Flowchart, Layered, Train & Generate
+    # Row 7: Grayscale toggle
+    Label(root, text="Grayscale? (yes/no):").grid(row=7, column=0, padx=5, pady=5)
+    grayscale_entry = Entry(root, width=10)
+    grayscale_entry.insert(0, "no")  # Default to RGB
+    grayscale_entry.grid(row=7, column=1, padx=5, pady=5)
+
     def on_visualize_flowchart():
         try:
             output_folder = output_entry.get()
             latent_dim = int(latent_entry.get())
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
+            grayscale = (grayscale_entry.get().strip().lower() == "yes")
 
-            # Here's where we can also pass 'start_spatial' if desired
-            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
-            discriminator = build_param_discriminator(disc_specs)
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4, grayscale=grayscale)
+            discriminator = build_param_discriminator(disc_specs, grayscale=grayscale)
 
             visualize_models_keras_plot(generator, discriminator, output_folder)
         except Exception as e:
@@ -343,9 +346,10 @@ def main():
             latent_dim = int(latent_entry.get())
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
+            grayscale = (grayscale_entry.get().strip().lower() == "yes")
 
-            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
-            discriminator = build_param_discriminator(disc_specs)
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4, grayscale=grayscale)
+            discriminator = build_param_discriminator(disc_specs, grayscale=grayscale)
 
             visualize_models_visualkeras(generator, discriminator, output_folder)
         except Exception as e:
@@ -360,28 +364,23 @@ def main():
             latent_dim = int(latent_entry.get())
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
+            grayscale = (grayscale_entry.get().strip().lower() == "yes")
 
-            # 1) Load dataset
-            dataset = load_images_from_folder(train_folder, (64, 64), 32)
+            dataset = load_images_from_folder(train_folder, image_size=(64, 64), grayscale=grayscale)
 
-            # 2) Build models (with dynamic start_spatial if you want 8 etc.)
-            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
-            discriminator = build_param_discriminator(disc_specs)
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4, grayscale=grayscale)
+            discriminator = build_param_discriminator(disc_specs, grayscale=grayscale)
 
-            # 3) Train
-            train_gan(generator, discriminator, dataset,
-                      latent_dim=latent_dim, epochs=epochs, print_interval=100)
-
-            # 4) Generate images
+            train_gan(generator, discriminator, dataset, latent_dim=latent_dim, epochs=epochs)
             generate_and_save_images(generator, latent_dim, num_images, output_folder)
             print(f"Data generation complete! Check '{output_folder}' for generated images.")
         except Exception as e:
             print(f"Training/Generation error: {e}")
 
-    # Row 7: Place Buttons
-    Button(root, text="Viz Flowchart", command=on_visualize_flowchart).grid(row=7, column=0, pady=10)
-    Button(root, text="Viz Layered", command=on_visualize_layered).grid(row=7, column=1, pady=10)
-    Button(root, text="Train & Generate", command=on_run).grid(row=7, column=2, pady=10)
+    # Row 8: Place Buttons
+    Button(root, text="Viz Flowchart", command=on_visualize_flowchart).grid(row=8, column=0, pady=10)
+    Button(root, text="Viz Layered", command=on_visualize_layered).grid(row=8, column=1, pady=10)
+    Button(root, text="Train & Generate", command=on_run).grid(row=8, column=2, pady=10)
 
     root.mainloop()
 
