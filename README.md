@@ -43,6 +43,13 @@ Resultant loss values: batch=4100, d_loss=0.9101, g_loss=1.2164
 
 ![Discriminator Architecture](./synthetic_sevens_second_experiment/dcgan_discriminator_blockdiagram.png)
 
+## Referenced Citations
+
+- Radford, A. (2015). Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv preprint arXiv:1511.06434.
+
+- S. Vijaya Lakshmi, Vallik Sai Ganesh Raju Ganaraju, “Deep Convolutional Generative Adversial Network on
+MNIST Dataset”, Journal of Science and Technology, Vol. 06, Issue 03, May-June 2021, pp169-177
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
