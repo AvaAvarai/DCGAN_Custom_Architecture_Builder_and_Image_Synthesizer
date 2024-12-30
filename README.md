@@ -1,9 +1,9 @@
 # DCGAN Custom Architecture Builder and Synthetic Image Generator
 
-This project is a DCGAN (Deep Convolutional Generative Adversarial Network) custom architecture builder and synthetic image generator.
-It allows the user to specify the architecture of the generator and discriminator, visualize the models, train the GAN, and generate synthetic images.
+This project is a DCGAN (Deep Convolutional Generative Adversarial Network) custom architecture builder and image synthesizer.  
+It allows the user to specify the architecture of the generator and discriminator, visualize the models, train the GAN, and synthesize images.  
 
-The user interface is built using Tkinter, and the models are built using TensorFlow and Keras.
+The user interface is built in Python using Tkinter, and the models are built using TensorFlow and Keras the diagrams are visualized with visualkeras and tensorflow keras utils.
 
 ## First Experiment
 
