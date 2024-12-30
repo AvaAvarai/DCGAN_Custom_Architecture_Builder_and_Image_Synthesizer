@@ -7,11 +7,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tkinter import filedialog, Tk, Label, Entry, Button
 
-# --- Additional imports for visualkeras ---
+# For diagram visualizations
 import visualkeras
 from PIL import ImageFont
-
-# For flowchart-based diagrams:
 from tensorflow.keras.utils import plot_model
 
 
@@ -53,6 +51,7 @@ def build_param_generator(latent_dim, layer_specs):
 
     # Build the model
     model = keras.Sequential(name="generator")
+    
     # 1) Input layer for latent vector (z)
     model.add(keras.Input(shape=(latent_dim,)))  
     
@@ -60,7 +59,8 @@ def build_param_generator(latent_dim, layer_specs):
     out_channels_0, kernel_0, stride_0 = layer_specs[0]
     model.add(layers.Dense(4 * 4 * out_channels_0, use_bias=False))
     model.add(layers.BatchNormalization())
-    # Keras warns about 'alpha' vs 'negative_slope'. We can rename or keep alpha for brevity.
+    
+    # Note: Keras uses 'negative_slope' instead of 'alpha'
     model.add(layers.LeakyReLU(negative_slope=0.2))
     model.add(layers.Reshape((4, 4, out_channels_0)))  
 

@@ -1,17 +1,30 @@
 # DCGAN Custom Architecture Builder and Synthetic Image Generator
 
-This project is a DCGAN (Deep Convolutional Generative Adversarial Network) custom architecture builder and image synthesizer.  
-It allows the user to specify the architecture of the generator and discriminator, visualize the models, train the GAN, and synthesize images.  
+This project is a DCGAN (Deep Convolutional Generative Adversarial Network) custom architecture builder and image synthesizer. It allows the user to specify the architecture of the generator and discriminator, visualize the models, train the GAN, and synthesize images. This allows for dynamic experimentation with the architecture of the generator and discriminator because as detailed in the literature [1] and [2] the architecture of the generator and discriminator impacts the performance of the GAN.  
 
-The user interface is built in Python using Tkinter, and the models are built using TensorFlow and Keras the diagrams are visualized with visualkeras and tensorflow keras utils.
+The user interface is built in Python using Tkinter, and the models are built using TensorFlow and Keras the diagrams are visualized with visualkeras and tensorflow keras utils.  
 
 ![ui screenshot](./image.png)
 
-We will be using the MNIST dataset of handwritten digits, specifically the sevens for experimentation.  
+## Project Setup
+
+Currently, the project is a single python file, and the dependencies are:
+
+```sh
+pip install numpy matplotlib tensorflow keras visualkeras pillow
+```
+
+## Project Execution
+
+```sh
+python main.py
+```
 
 ## Ground Truth MNIST Sevens
 
-Ten of the 4401 MNIST sevens train data images are shown below.
+We will be using the MNIST dataset of handwritten digits, for training open character recognition models. We specifically use the sevens for initial experimentation.  
+
+Ten of the 4401 MNIST sevens train data images are shown below.  
 
 ![mnist seven 0](./real_mnist_sevens_train_data/img_6.jpg)
 ![mnist seven 1](./real_mnist_sevens_train_data/img_18.jpg)
@@ -26,7 +39,7 @@ Ten of the 4401 MNIST sevens train data images are shown below.
 
 ## First Experiment
 
-We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with loss values of batch=1300, d_loss=1.2257, g_loss=0.9160, and generated 5 images.
+We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with loss values of batch=1300, d_loss=1.2257, g_loss=0.9160, and generated 5 images.  
 
 ![Generated Image 1](./synthetic_sevens_first_experiment/generated_0.png)
 ![Generated Image 2](./synthetic_sevens_first_experiment/generated_1.png)
@@ -36,6 +49,11 @@ We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with
 
 ## Second Experiment
 
+We trained the custom DCGAN model on the MNIST 7's train data for 30 epochs with loss values of batch=4100, d_loss=0.9101, g_loss=1.2164, and generated 6 images.  
+
+This is the first experiment with custom architecture parameters.  
+
+Experiment architecture parameters:  
 Training data: MNIST train set digit sevens.  
 Epochs: 30  
 Latent Dim: 100  
@@ -62,9 +80,9 @@ Resultant loss values: batch=4100, d_loss=0.9101, g_loss=1.2164
 
 ## Referenced Citations
 
-- Radford, A. (2015). Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv preprint arXiv:1511.06434.
+[1] Radford, A. (2015). Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv preprint arXiv:1511.06434.
 
-- S. Vijaya Lakshmi, Vallik Sai Ganesh Raju Ganaraju, “Deep Convolutional Generative Adversial Network on
+[2] S. Vijaya Lakshmi, Vallik Sai Ganesh Raju Ganaraju, “Deep Convolutional Generative Adversial Network on
 MNIST Dataset”, Journal of Science and Technology, Vol. 06, Issue 03, May-June 2021, pp169-177
 
 ## License
