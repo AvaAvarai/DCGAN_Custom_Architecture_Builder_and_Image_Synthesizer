@@ -70,7 +70,7 @@ def build_param_generator(latent_dim, layer_specs, start_spatial=4, grayscale=Fa
     # Final layer
     out_channels_last, kernel_last, stride_last = layer_specs[-1]
     model.add(layers.Conv2DTranspose(
-        filters=output_channels,
+        filters=output_channels,  # 1 for grayscale, 3 for RGB
         kernel_size=kernel_last,
         strides=stride_last,
         padding='same',
@@ -134,8 +134,17 @@ def load_images_from_folder(folder, image_size=(64, 64), batch_size=32, grayscal
     all_images = np.array(all_images, dtype=np.float32)
     all_images = (all_images - 127.5) / 127.5  # Normalize to [-1, 1]
 
+    # Ensure grayscale images have shape (H, W, 1)
+    if grayscale and all_images.shape[-1] != 1:
+        all_images = all_images[..., np.newaxis]  # Add channel only if not already present
+
     dataset = tf.data.Dataset.from_tensor_slices(all_images)
     dataset = dataset.shuffle(buffer_size=1000).batch(batch_size)
+    
+    # Expected shape: (num_images, 64, 64, 1) for grayscale, (num_images, 64, 64, 3) for RGB
+    # If shapes mismatch, print the shape of the dataset to debug
+    # print(f"Dataset shape: {all_images.shape}")  # Debugging
+
     return dataset
 
 
@@ -210,7 +219,9 @@ def generate_and_save_images(generator, latent_dim, num_images, output_folder):
 
     for i in range(num_images):
         img_array = generated_images[i].numpy().astype(np.uint8)
-        plt.imsave(os.path.join(output_folder, f"generated_{i}.png"), img_array)
+        if img_array.shape[-1] == 1:  # Grayscale
+            img_array = img_array.squeeze(-1)  # Remove the channel dimension
+        plt.imsave(os.path.join(output_folder, f"generated_{i}.png"), img_array, cmap="gray" if img_array.ndim == 2 else None)
 
 
 # ------------------------ Visualization Helpers ------------------------ #
