@@ -109,6 +109,49 @@ This is the first experiment with dynamic starting spatial dimensions allowing f
 
 ![Discriminator Architecture](./synthetic_sevens_third_experiment/dcgan_discriminator_blockdiagram.png)
 
+## Fourth Experiment
+
+This is the first experiment with grayscale image input, previously the images were processed as RGB.  
+
+2 epochs of training with the following loss values:
+Not grayscale batch=200, d_loss=1.3812, g_loss=0.7681
+Grayscale batch=200, d_loss=1.3975, g_loss=0.7304
+
+Architecture parameters:
+Generator: 1024,4,1; 512,4,2; 256,4,2; 128,4,2; 3,4,2
+Discriminator: 64,4,2; 128,4,2; 256,4,2; 512,4,2
+
+Latent dimension: 100
+Generated images: 12
+
+Processed as RGB:  
+![Generated Image 0](./synthetic_sevens_fourth_experiment/not_grayscale/generated_0.png)
+![Generated Image 1](./synthetic_sevens_fourth_experiment/not_grayscale/generated_1.png)
+![Generated Image 2](./synthetic_sevens_fourth_experiment/not_grayscale/generated_2.png)
+![Generated Image 3](./synthetic_sevens_fourth_experiment/not_grayscale/generated_3.png)
+![Generated Image 4](./synthetic_sevens_fourth_experiment/not_grayscale/generated_4.png)
+![Generated Image 5](./synthetic_sevens_fourth_experiment/not_grayscale/generated_5.png)
+![Generated Image 6](./synthetic_sevens_fourth_experiment/not_grayscale/generated_6.png)
+![Generated Image 7](./synthetic_sevens_fourth_experiment/not_grayscale/generated_7.png)
+![Generated Image 8](./synthetic_sevens_fourth_experiment/not_grayscale/generated_8.png)
+![Generated Image 9](./synthetic_sevens_fourth_experiment/not_grayscale/generated_9.png)
+![Generated Image 10](./synthetic_sevens_fourth_experiment/not_grayscale/generated_10.png)
+![Generated Image 11](./synthetic_sevens_fourth_experiment/not_grayscale/generated_11.png)
+
+Processed as grayscale:  
+![Generated Image 0](./synthetic_sevens_fourth_experiment/grayscale/generated_0.png)
+![Generated Image 1](./synthetic_sevens_fourth_experiment/grayscale/generated_1.png)
+![Generated Image 2](./synthetic_sevens_fourth_experiment/grayscale/generated_2.png)
+![Generated Image 3](./synthetic_sevens_fourth_experiment/grayscale/generated_3.png)
+![Generated Image 4](./synthetic_sevens_fourth_experiment/grayscale/generated_4.png)
+![Generated Image 5](./synthetic_sevens_fourth_experiment/grayscale/generated_5.png)
+![Generated Image 6](./synthetic_sevens_fourth_experiment/grayscale/generated_6.png)
+![Generated Image 7](./synthetic_sevens_fourth_experiment/grayscale/generated_7.png)
+![Generated Image 8](./synthetic_sevens_fourth_experiment/grayscale/generated_8.png)
+![Generated Image 9](./synthetic_sevens_fourth_experiment/grayscale/generated_9.png)
+![Generated Image 10](./synthetic_sevens_fourth_experiment/grayscale/generated_10.png)
+![Generated Image 11](./synthetic_sevens_fourth_experiment/grayscale/generated_11.png)
+
 ## Todo
 
 - [ ] Add graph visualization of the generator and discriminator loss values over training epochs.
