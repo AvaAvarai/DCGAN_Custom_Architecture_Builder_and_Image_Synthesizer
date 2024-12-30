@@ -41,28 +41,30 @@ def parse_layer_specs(spec_str):
     return layer_specs
 
 
-def build_param_generator(latent_dim, layer_specs):
+def build_param_generator(latent_dim, layer_specs, start_spatial=4):
     """
     Build a DCGAN-style generator using a list of (filters, kernel_size, stride),
-    starting with Input(...) instead of input_shape=...
+    starting with Input(...) instead of a direct input_shape=..., 
+    but allowing a dynamic 'start_spatial' (default=4) for the projection/reshape.
+
+    Example usage:
+        gen_specs = [(1024, 4, 1), (512, 4, 2), (256, 4, 2), (128, 4, 2), (3, 4, 2)]
+        generator = build_param_generator(latent_dim=100, layer_specs=gen_specs, start_spatial=4)
     """
     if not layer_specs:
         raise ValueError("Generator layer specs cannot be empty.")
 
-    # Build the model
     model = keras.Sequential(name="generator")
-    
+
     # 1) Input layer for latent vector (z)
     model.add(keras.Input(shape=(latent_dim,)))  
     
-    # 2) Projection layer: Dense + reshape to 4x4
+    # 2) Projection layer: Dense + reshape to start_spatial x start_spatial
     out_channels_0, kernel_0, stride_0 = layer_specs[0]
-    model.add(layers.Dense(4 * 4 * out_channels_0, use_bias=False))
+    model.add(layers.Dense(start_spatial * start_spatial * out_channels_0, use_bias=False))
     model.add(layers.BatchNormalization())
-    
-    # Note: Keras uses 'negative_slope' instead of 'alpha'
     model.add(layers.LeakyReLU(negative_slope=0.2))
-    model.add(layers.Reshape((4, 4, out_channels_0)))  
+    model.add(layers.Reshape((start_spatial, start_spatial, out_channels_0)))
 
     # 3) Intermediate upsampling layers
     for (out_ch, k, s) in layer_specs[1:-1]:
@@ -92,7 +94,6 @@ def build_param_discriminator(layer_specs):
     if not layer_specs:
         raise ValueError("Discriminator layer specs cannot be empty.")
 
-    # Build the model
     model = keras.Sequential(name="discriminator")
     # 1) Input layer for 64x64 RGB images
     model.add(keras.Input(shape=(64, 64, 3)))  
@@ -311,7 +312,7 @@ def main():
     # Row 5: Generator Specs
     Label(root, text="Generator Specs:\n(out_ch, k, stride ; ... )").grid(row=5, column=0, padx=5, pady=5)
     gen_entry = Entry(root, width=50)
-    gen_entry.insert(0, "1024,4,1; 512,5,2; 256,5,2; 128,5,2; 3,5,2")
+    gen_entry.insert(0, "1024,4,1; 512,4,2; 256,4,2; 128,4,2; 3,4,2")
     gen_entry.grid(row=5, column=1, padx=5, pady=5, columnspan=2)
 
     # Row 6: Discriminator Specs
@@ -328,8 +329,10 @@ def main():
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
 
-            generator = build_param_generator(latent_dim, gen_specs)
+            # Here's where we can also pass 'start_spatial' if desired
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
             discriminator = build_param_discriminator(disc_specs)
+
             visualize_models_keras_plot(generator, discriminator, output_folder)
         except Exception as e:
             print(f"Flowchart visualization error: {e}")
@@ -341,8 +344,9 @@ def main():
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
 
-            generator = build_param_generator(latent_dim, gen_specs)
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
             discriminator = build_param_discriminator(disc_specs)
+
             visualize_models_visualkeras(generator, discriminator, output_folder)
         except Exception as e:
             print(f"Layered (visualkeras) visualization error: {e}")
@@ -360,8 +364,8 @@ def main():
             # 1) Load dataset
             dataset = load_images_from_folder(train_folder, (64, 64), 32)
 
-            # 2) Build models
-            generator = build_param_generator(latent_dim, gen_specs)
+            # 2) Build models (with dynamic start_spatial if you want 8 etc.)
+            generator = build_param_generator(latent_dim, gen_specs, start_spatial=4)
             discriminator = build_param_discriminator(disc_specs)
 
             # 3) Train

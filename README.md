@@ -11,7 +11,7 @@ The user interface is built in Python using Tkinter, and the models are built us
 Currently, the project is a single python file, and the dependencies are:
 
 ```sh
-pip install numpy matplotlib tensorflow keras visualkeras pillow
+pip install numpy matplotlib tensorflow keras visualkeras pillow pydot
 ```
 
 ## Project Execution
@@ -68,15 +68,20 @@ Resultant loss values: batch=4100, d_loss=0.9101, g_loss=1.2164
 ![Generated Image 4](./synthetic_sevens_second_experiment/generated_4.png)
 ![Generated Image 5](./synthetic_sevens_second_experiment/generated_5.png)
 
-### Architecture Block Diagrams
+### Architecture Block Diagrams for the Second Experiment
 
-#### Generator
+#### Generator Block Diagram
 
 ![Generator Architecture](./synthetic_sevens_second_experiment/dcgan_generator_blockdiagram.png)
 
-#### Discriminator
+#### Discriminator Block Diagram
 
 ![Discriminator Architecture](./synthetic_sevens_second_experiment/dcgan_discriminator_blockdiagram.png)
+
+## Todo
+
+- [ ] Add image preprocessing to not choose to grayscale the images.
+- [ ] Add graph visualization of the generator and discriminator loss values over training epochs.
 
 ## Referenced Citations
 
