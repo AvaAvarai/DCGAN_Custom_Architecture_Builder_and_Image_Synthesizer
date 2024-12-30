@@ -7,6 +7,23 @@ The user interface is built in Python using Tkinter, and the models are built us
 
 ![ui screenshot](./image.png)
 
+We will be using the MNIST dataset of handwritten digits, specifically the sevens for experimentation.  
+
+## Ground Truth MNIST Sevens
+
+Ten of the 4401 MNIST sevens train data images are shown below.
+
+![mnist seven 0](./real_mnist_sevens_train_data/img_6.jpg)
+![mnist seven 1](./real_mnist_sevens_train_data/img_18.jpg)
+![mnist seven 2](./real_mnist_sevens_train_data/img_29.jpg)
+![mnist seven 3](./real_mnist_sevens_train_data/img_47.jpg)
+![mnist seven 4](./real_mnist_sevens_train_data/img_48.jpg)
+![mnist seven 5](./real_mnist_sevens_train_data/img_50.jpg)
+![mnist seven 6](./real_mnist_sevens_train_data/img_76.jpg)
+![mnist seven 7](./real_mnist_sevens_train_data/img_102.jpg)
+![mnist seven 8](./real_mnist_sevens_train_data/img_103.jpg)
+![mnist seven 9](./real_mnist_sevens_train_data/img_116.jpg)
+
 ## First Experiment
 
 We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with loss values of batch=1300, d_loss=1.2257, g_loss=0.9160, and generated 5 images.
