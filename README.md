@@ -17,9 +17,9 @@ We trained the custom DCGAN model on the MNIST 7's train data for 10 epochs with
 
 ## Second Experiment
 
-Training data: MNIST train set digit sevens.
-Epochs: 30    
-Latent Dim: 100
+Training data: MNIST train set digit sevens.  
+Epochs: 30  
+Latent Dim: 100  
 Generator: 1024,4,1; 512,5,2; 256,5,2; 128,5,2; 3,5,2  
 Discriminator: 64,4,2; 128,4,2; 256,4,2; 512,4,2  
 Resultant loss values: batch=4100, d_loss=0.9101, g_loss=1.2164  
