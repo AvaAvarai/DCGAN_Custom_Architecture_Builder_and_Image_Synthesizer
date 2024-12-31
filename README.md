@@ -6,6 +6,9 @@ The user interface is built in Python using Tkinter, and the models are built us
 
 ![ui screenshot](./image.png)
 
+Lossless visualization of the MNIST train data subsets.
+![mnist visualization](./lossless_visualization_train_subsets.png)
+
 ## Project Setup
 
 Currently, the project is a single python file, and the dependencies are:
