@@ -12,9 +12,9 @@ With the motivation of visualizing imagery data as Parallel Coordinates plots an
 
 ### Multi-Row Parallel Coordinates Grayscale Image Frequency Tableau Plot
 
-We load image(s) as say 'png', 'jpg', 'jpeg', or 'bmp' by the grayscale frequency of each pixel in the images into a data matrix D we then min-max normalize D to yield D’. We visualize D’ by a snake-view inspired, imagery domain-specific task, since image pixels have a natural order of precedence we mimic the order with our parallel axes think where we have the number of rows of parallel axes as the number of rows in D’ and the same for the number of columns where each column is a parallel axis and each row is a parallel coordinates plot all sharing the same minimal and maximal axis values forming a Parallel Coordinates Image Frequency Tableau Plot.
+We load image(s) as say 'png', 'jpg', 'jpeg', or 'bmp' by the grayscale frequency of each pixel in the images into a data matrix **D** we then min-max normalize **D** to yield **D’**. We visualize **D’** by a snake-view inspired, imagery domain-specific task, since image pixels have a natural order of precedence we mimic the order with our parallel axes think where we have the number of rows of parallel axes as the number of rows in **D’** and the same for the number of columns where each column is a parallel axis and each row is a parallel coordinates plot all sharing the same minimal and maximal axis values forming a Parallel Coordinates Image Frequency Tableau Plot.
 
-Lossless visualization of the MNIST train data subsets.  
+Lossless visualization of the MNIST train data subsets. This copy of the plots losses some fidelity due to shrinking the image sizes to see simultaneously. All original plots are in the lossless_visualization_train_subsets folder.  
 ![mnist visualization](./lossless_visualization_train_subsets/image.png)
 
 ## Project Setup
