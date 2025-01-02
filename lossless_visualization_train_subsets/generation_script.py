@@ -97,22 +97,14 @@ def process_images(image_files, target_size):
             if image_shape is None:
                 image_shape = img_array.shape
             elif img_array.shape != image_shape:
-                print(f"Image {filepath} skipped due to size mismatch.")
                 skipped_count += 1
                 continue
             images.append(img_array)
             processed_count += 1
-            print(f"Processed {filepath}")
         except Exception as e:
-            print(f"Error processing {filepath}: {str(e)}")
             error_count += 1
     
-    print(f"\nProcessing summary:")
-    print(f"Successfully processed: {processed_count} images")
-    print(f"Skipped due to size mismatch: {skipped_count} images")
-    print(f"Failed to process: {error_count} images")
-    print(f"Total attempted: {processed_count + skipped_count + error_count} images\n")
-    
+    print(f"Processing summary: {processed_count} processed, {skipped_count} skipped, {error_count} failed")
     return images, image_shape
 
 # Main program
@@ -122,57 +114,72 @@ def main():
     print(f"Looking in directory: {root_dir}")
     target_size = tuple(map(int, input("Enter the target image size (width, height): ").split(',')))
 
-    # Find all images recursively
-    print("Searching for images recursively...")
-    image_files = find_all_images(root_dir)
+    # Get script directory for saving plots
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    if not image_files:
-        print("No images found in the specified directory or its subdirectories!")
-        return
-    
-    print(f"Found {len(image_files)} image files")
+    # Group images by folder
+    folder_images = {}
+    print("Grouping images by folder...")
+    for filepath in find_all_images(root_dir):
+        folder = os.path.basename(os.path.dirname(filepath))
+        if folder not in folder_images:
+            folder_images[folder] = []
+        folder_images[folder].append(filepath)
 
-    # First pass: Calculate global min and max
+    # Calculate global min and max across ALL images
     global_min, global_max = float("inf"), float("-inf")
+    all_processed_images = []
+    
     print("\nFirst pass: calculating global min and max...")
-    images, _ = process_images(image_files, target_size)
-    
-    if not images:
+    for folder, filepaths in folder_images.items():
+        print(f"\nProcessing folder: {folder}")
+        images, _ = process_images(filepaths, target_size)
+        if images:
+            all_processed_images.extend(images)
+            for img in images:
+                global_min = min(global_min, img.min())
+                global_max = max(global_max, img.max())
+
+    if not all_processed_images:
         print("No valid images to process.")
         return
 
-    print(f"Using {len(images)} images for visualization")
-    
-    for img in images:
-        global_min = min(global_min, img.min())
-        global_max = max(global_max, img.max())
-
+    print(f"\nGlobal statistics:")
     print(f"Global min: {global_min}, Global max: {global_max}")
+    print(f"Total images: {len(all_processed_images)}")
 
-    # Second pass: Generate plots
-    print("\nSecond pass: generating plots...")
-    images, image_shape = process_images(image_files, target_size)
+    # Generate individual folder plots
+    print("\nGenerating individual folder plots...")
+    all_lines = []
+    all_colors = []
     
-    if not images:
-        print("No valid images to process.")
-        return
+    for folder_idx, (folder, filepaths) in enumerate(folder_images.items()):
+        print(f"\nProcessing folder: {folder}")
+        images, image_shape = process_images(filepaths, target_size)
+        
+        if not images:
+            print(f"No valid images in folder {folder}")
+            continue
 
-    print(f"\nGenerating plots for {len(images)} images...")
+        # Generate color for this folder
+        color = plt.cm.tab10(folder_idx % 10)  # Use tab10 colormap for distinct colors
+        
+        # Generate individual folder plot
+        lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max, color)
+        output_path = os.path.join(script_dir, f"plot_{folder}.png")
+        plot_and_save_parallel_coordinates(
+            lines, colors, image_shape[0], image_shape[1], output_path
+        )
+        
+        # Store for combined plot
+        all_lines.extend(lines)
+        all_colors.extend(colors)
 
-    # Get folder name to assign color
-    folder_name = os.path.basename(root_dir)
-    
-    # Generate a color based on the folder name
-    # Using a hash function to get a consistent color for each folder
-    folder_hash = hash(folder_name) % 1000 / 1000.0  # Get a number between 0 and 1
-    color = plt.cm.tab10(folder_hash)  # Use tab10 colormap for distinct colors
-    
-    # Generate plot
-    print("Generating visualization plot...")
-    lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max, color)
-    output_path = os.path.join(root_dir, "all_images_plot.png")
+    # Generate combined plot
+    print("\nGenerating combined plot...")
+    output_path = os.path.join(script_dir, "plot_combined.png")
     plot_and_save_parallel_coordinates(
-        lines, colors, image_shape[0], image_shape[1], output_path
+        all_lines, all_colors, image_shape[0], image_shape[1], output_path
     )
 
 if __name__ == "__main__":
