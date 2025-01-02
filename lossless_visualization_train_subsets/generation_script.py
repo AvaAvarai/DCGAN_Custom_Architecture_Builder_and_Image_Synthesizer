@@ -20,10 +20,12 @@ def normalize_global(data, global_min, global_max):
     return (data - global_min) / range_
 
 # Prepare data for plotting
-def prepare_data_with_offsets(images, image_shape, global_min, global_max):
+def prepare_data_with_offsets(images, image_shape, global_min, global_max, color):
+    """Now takes a color parameter for all lines from the same folder"""
     rows, cols = image_shape
     all_lines = []
     colors = []
+    
     for idx, img_data in enumerate(images):
         # Make a copy of the data
         processed_data = img_data.copy()
@@ -40,22 +42,32 @@ def prepare_data_with_offsets(images, image_shape, global_min, global_max):
             y_values = processed_data[row, :] + offset
             x_values = np.arange(cols)
             all_lines.append(np.column_stack((x_values, y_values)))
-            colors.append(row)  # Assign a unique color per row
+            colors.append(color)  # Use the same color for all rows of this image
     return all_lines, colors
 
 # Plotting function with optimization
 def plot_and_save_parallel_coordinates(lines, colors, num_rows, num_cols, output_path):
     fig, ax = plt.subplots(figsize=(25.5, 25.5))
 
+    # Calculate opacity based on number of samples
+    n_samples = len(lines) // num_rows  # Total number of images
+    opacity = max(0.05, min(0.2, 5.0 / n_samples))  # Ensure opacity is between 0.05 and 0.2
+    print(f"Using opacity: {opacity:.3f}")
+
     # Create LineCollection for efficiency
-    lc = LineCollection(lines, linewidths=0.5, alpha=0.01, cmap='viridis', array=np.array(colors))
+    lc = LineCollection(lines, linewidths=0.5, alpha=opacity, colors=colors)
     ax.add_collection(lc)
 
     # Set layout
     ax.set_xlim(0, num_cols - 1)
     ax.set_ylim(0, num_rows)
-    ax.axis('off')  # Remove axes for clean plot
-    ax.set_title("Parallel Coordinates Plot of Image Pixel Data with Row Offsets", fontsize=16)
+    
+    # Add labels and grid
+    ax.set_xlabel('Pixel Position (x)', fontsize=12)
+    ax.set_ylabel('Row of Pixel Data (y)', fontsize=12)
+    ax.grid(True, alpha=0.2)
+    
+    ax.set_title("Multi-Row Parallel Coordinates Plot of Image Pixel Data", fontsize=16)
 
     # Save the figure
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
@@ -147,9 +159,17 @@ def main():
 
     print(f"\nGenerating plots for {len(images)} images...")
 
+    # Get folder name to assign color
+    folder_name = os.path.basename(root_dir)
+    
+    # Generate a color based on the folder name
+    # Using a hash function to get a consistent color for each folder
+    folder_hash = hash(folder_name) % 1000 / 1000.0  # Get a number between 0 and 1
+    color = plt.cm.tab10(folder_hash)  # Use tab10 colormap for distinct colors
+    
     # Generate plot
     print("Generating visualization plot...")
-    lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max)
+    lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max, color)
     output_path = os.path.join(root_dir, "all_images_plot.png")
     plot_and_save_parallel_coordinates(
         lines, colors, image_shape[0], image_shape[1], output_path
