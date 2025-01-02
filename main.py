@@ -192,10 +192,11 @@ def gan_train_step(real_images, generator, discriminator,
 
 
 def train_gan(generator, discriminator, dataset,
-              latent_dim=100, epochs=10, print_interval=100):
+              latent_dim=100, epochs=10, print_interval=100,
+              g_learning_rate=0.0002, d_learning_rate=0.0002):
     """Train the GAN for a specified number of epochs using a custom loop."""
-    g_optimizer = keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5)
-    d_optimizer = keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5)
+    g_optimizer = keras.optimizers.Adam(learning_rate=g_learning_rate, beta_1=0.5)
+    d_optimizer = keras.optimizers.Adam(learning_rate=d_learning_rate, beta_1=0.5)
 
     batch_count = 0
     for epoch in range(epochs):
@@ -336,6 +337,18 @@ def main():
     grayscale_entry.insert(0, "no")  # Default to RGB
     grayscale_entry.grid(row=7, column=1, padx=5, pady=5)
 
+    # Row 8: Generator Learning Rate
+    Label(root, text="Generator Learning Rate:").grid(row=8, column=0, padx=5, pady=5)
+    g_lr_entry = Entry(root, width=10)
+    g_lr_entry.insert(0, "0.0002")  # Default value
+    g_lr_entry.grid(row=8, column=1, padx=5, pady=5)
+
+    # Row 9: Discriminator Learning Rate
+    Label(root, text="Discriminator Learning Rate:").grid(row=9, column=0, padx=5, pady=5)
+    d_lr_entry = Entry(root, width=10)
+    d_lr_entry.insert(0, "0.0002")  # Default value
+    d_lr_entry.grid(row=9, column=1, padx=5, pady=5)
+
     def on_visualize_flowchart():
         try:
             output_folder = output_entry.get()
@@ -376,22 +389,30 @@ def main():
             gen_specs = parse_layer_specs(gen_entry.get())
             disc_specs = parse_layer_specs(disc_entry.get())
             grayscale = (grayscale_entry.get().strip().lower() == "yes")
+            
+            # Get learning rates from GUI
+            g_learning_rate = float(g_lr_entry.get())
+            d_learning_rate = float(d_lr_entry.get())
 
             dataset = load_images_from_folder(train_folder, image_size=(64, 64), grayscale=grayscale)
 
             generator = build_param_generator(latent_dim, gen_specs, start_spatial=4, grayscale=grayscale)
             discriminator = build_param_discriminator(disc_specs, grayscale=grayscale)
 
-            train_gan(generator, discriminator, dataset, latent_dim=latent_dim, epochs=epochs)
+            train_gan(generator, discriminator, dataset, 
+                     latent_dim=latent_dim, 
+                     epochs=epochs,
+                     g_learning_rate=g_learning_rate,
+                     d_learning_rate=d_learning_rate)
             generate_and_save_images(generator, latent_dim, num_images, output_folder)
             print(f"Data generation complete! Check '{output_folder}' for generated images.")
         except Exception as e:
             print(f"Training/Generation error: {e}")
 
-    # Row 8: Place Buttons
-    Button(root, text="Viz Flowchart", command=on_visualize_flowchart).grid(row=8, column=0, pady=10)
-    Button(root, text="Viz Layered", command=on_visualize_layered).grid(row=8, column=1, pady=10)
-    Button(root, text="Train & Generate", command=on_run).grid(row=8, column=2, pady=10)
+    # Row 10: Place Buttons (moved down one row)
+    Button(root, text="Viz Flowchart", command=on_visualize_flowchart).grid(row=10, column=0, pady=10)
+    Button(root, text="Viz Layered", command=on_visualize_layered).grid(row=10, column=1, pady=10)
+    Button(root, text="Train & Generate", command=on_run).grid(row=10, column=2, pady=10)
 
     root.mainloop()
 
