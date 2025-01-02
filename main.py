@@ -1,3 +1,4 @@
+# pip install tensorflow numpy matplotlib pillow visualkeras
 import os
 import glob
 import numpy as np

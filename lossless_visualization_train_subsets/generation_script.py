@@ -1,3 +1,4 @@
+# pip install numpy pillow matplotlib
 import numpy as np
 import os
 from PIL import Image
@@ -24,16 +25,19 @@ def prepare_data_with_offsets(images, image_shape, global_min, global_max):
     all_lines = []
     colors = []
     for idx, img_data in enumerate(images):
+        # Make a copy of the data
+        processed_data = img_data.copy()
+        
         # Normalize the image data globally
-        img_data = normalize_global(img_data, global_min, global_max)
+        processed_data = normalize_global(processed_data, global_min, global_max)
 
         # Reverse the row order to match the correct orientation
-        img_data = img_data[::-1, :]
+        processed_data = processed_data[::-1, :]
 
         # Apply offsets to separate each row visually
         for row in range(rows):
             offset = row  # Offset for visual separation
-            y_values = img_data[row, :] + offset
+            y_values = processed_data[row, :] + offset
             x_values = np.arange(cols)
             all_lines.append(np.column_stack((x_values, y_values)))
             colors.append(row)  # Assign a unique color per row
@@ -58,59 +62,98 @@ def plot_and_save_parallel_coordinates(lines, colors, num_rows, num_cols, output
     plt.close(fig)
     print(f"Plot saved to {output_path}")
 
+def find_all_images(directory):
+    """Recursively find all image files in directory and subdirectories"""
+    image_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.lower().endswith(('png', 'jpg', 'jpeg', 'bmp')):
+                image_files.append(os.path.join(root, file))
+    return image_files
+
+def process_images(image_files, target_size):
+    """Process a list of image files and return list of images and their shape"""
+    images = []
+    image_shape = None
+    processed_count = 0
+    skipped_count = 0
+    error_count = 0
+    
+    for filepath in image_files:
+        try:
+            img_array = load_image(filepath, target_size=target_size)
+            if image_shape is None:
+                image_shape = img_array.shape
+            elif img_array.shape != image_shape:
+                print(f"Image {filepath} skipped due to size mismatch.")
+                skipped_count += 1
+                continue
+            images.append(img_array)
+            processed_count += 1
+            print(f"Processed {filepath}")
+        except Exception as e:
+            print(f"Error processing {filepath}: {str(e)}")
+            error_count += 1
+    
+    print(f"\nProcessing summary:")
+    print(f"Successfully processed: {processed_count} images")
+    print(f"Skipped due to size mismatch: {skipped_count} images")
+    print(f"Failed to process: {error_count} images")
+    print(f"Total attempted: {processed_count + skipped_count + error_count} images\n")
+    
+    return images, image_shape
+
 # Main program
 def main():
-    # Input: Directory containing subfolders of images and target size
-    root_dir = input("Enter the root directory containing subfolders of images: ")
+    # Input: Directory containing images and target size
+    root_dir = input("Enter the directory containing images: ")
+    print(f"Looking in directory: {root_dir}")
     target_size = tuple(map(int, input("Enter the target image size (width, height): ").split(',')))
 
-    global_min, global_max = float("inf"), float("-inf")  # Initialize global min and max
+    # Find all images recursively
+    print("Searching for images recursively...")
+    image_files = find_all_images(root_dir)
+    
+    if not image_files:
+        print("No images found in the specified directory or its subdirectories!")
+        return
+    
+    print(f"Found {len(image_files)} image files")
 
-    # First pass: Calculate global min and max across all images
-    for subfolder in os.listdir(root_dir):
-        subfolder_path = os.path.join(root_dir, subfolder)
-        if not os.path.isdir(subfolder_path):
-            continue
+    # First pass: Calculate global min and max
+    global_min, global_max = float("inf"), float("-inf")
+    print("\nFirst pass: calculating global min and max...")
+    images, _ = process_images(image_files, target_size)
+    
+    if not images:
+        print("No valid images to process.")
+        return
 
-        for filename in os.listdir(subfolder_path):
-            filepath = os.path.join(subfolder_path, filename)
-            if filepath.lower().endswith(('png', 'jpg', 'jpeg', 'bmp')):
-                img_array = load_image(filepath, target_size=target_size)
-                global_min = min(global_min, img_array.min())
-                global_max = max(global_max, img_array.max())
+    print(f"Using {len(images)} images for visualization")
+    
+    for img in images:
+        global_min = min(global_min, img.min())
+        global_max = max(global_max, img.max())
 
-    # Print global min and max for debugging
     print(f"Global min: {global_min}, Global max: {global_max}")
 
-    # Second pass: Process each folder and plot
-    for subfolder in os.listdir(root_dir):
-        subfolder_path = os.path.join(root_dir, subfolder)
-        if not os.path.isdir(subfolder_path):
-            continue
+    # Second pass: Generate plots
+    print("\nSecond pass: generating plots...")
+    images, image_shape = process_images(image_files, target_size)
+    
+    if not images:
+        print("No valid images to process.")
+        return
 
-        print(f"Processing folder: {subfolder}")
-        images = []
-        image_shape = None
+    print(f"\nGenerating plots for {len(images)} images...")
 
-        for filename in os.listdir(subfolder_path):
-            filepath = os.path.join(subfolder_path, filename)
-            if filepath.lower().endswith(('png', 'jpg', 'jpeg', 'bmp')):
-                img_array = load_image(filepath, target_size=target_size)
-                if image_shape is None:
-                    image_shape = img_array.shape
-                elif img_array.shape != image_shape:
-                    print(f"Image {filename} skipped due to size mismatch.")
-                    continue
-                images.append(img_array)
-
-        if not images:
-            print(f"No valid images to process in folder {subfolder}.")
-            continue
-
-        # Prepare data and plot
-        lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max)
-        output_path = os.path.join(root_dir, f"{subfolder}_plot.png")
-        plot_and_save_parallel_coordinates(lines, colors, image_shape[0], image_shape[1], output_path)
+    # Generate plot
+    print("Generating visualization plot...")
+    lines, colors = prepare_data_with_offsets(images, image_shape, global_min, global_max)
+    output_path = os.path.join(root_dir, "all_images_plot.png")
+    plot_and_save_parallel_coordinates(
+        lines, colors, image_shape[0], image_shape[1], output_path
+    )
 
 if __name__ == "__main__":
     main()
